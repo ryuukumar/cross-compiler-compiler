@@ -122,24 +122,24 @@ gcc_url="https://github.com/gcc-mirror/gcc/archive/refs/tags/releases/gcc-${gcc_
 binutils_url="https://github.com/bminor/binutils-gdb/archive/refs/tags/binutils-${binuntils_version//./_}.tar.gz"
 
 echo -e "${CYAN}2.1. Downloading GCC source files...${NOCOLOR}"
-# if wget -q --show-progress -c -O "${build_dir}/gcc-${gcc_version}.tar.gz" "${gcc_url}"; then
-#     echo -e "${GREEN}GCC source file downloaded successfully.${NOCOLOR}"
-# else
-#     echo -e "${RED}Failed to download GCC source file from ${gcc_url}. Aborting.${NOCOLOR}"
-#     exit 1
-# fi
+if wget -q --show-progress -c -O "${build_dir}/gcc-${gcc_version}.tar.gz" "${gcc_url}"; then
+    echo -e "${GREEN}GCC source file downloaded successfully.${NOCOLOR}"
+else
+    echo -e "${RED}Failed to download GCC source file from ${gcc_url}. Aborting.${NOCOLOR}"
+    exit 1
+fi
 
 echo -e "${CYAN}2.2. Downloading Binutils source files...${NOCOLOR}"
-# if wget -q --show-progress -c -O "${build_dir}/binuntils-${binuntils_version}.tar.gz" "${binutils_url}"; then
-#     echo -e "${GREEN}Binutils source file downloaded successfully.${NOCOLOR}"
-# else
-#     echo -e "${RED}Failed to download GCC source file from ${binutils_url}. Aborting.${NOCOLOR}"
-#     exit 1
-# fi
+if wget -q --show-progress -c -O "${build_dir}/binuntils-${binuntils_version}.tar.gz" "${binutils_url}"; then
+    echo -e "${GREEN}Binutils source file downloaded successfully.${NOCOLOR}"
+else
+    echo -e "${RED}Failed to download GCC source file from ${binutils_url}. Aborting.${NOCOLOR}"
+    exit 1
+fi
 
 echo -e "${CYAN}2.3. Unpacking source files...${NOCOLOR}"
-#tar -xf "${build_dir}/gcc-${gcc_version}.tar.gz" -C "${build_dir}"
-#tar -xf "${build_dir}/binuntils-${binuntils_version}.tar.gz" -C "${build_dir}"
+tar -xf "${build_dir}/gcc-${gcc_version}.tar.gz" -C "${build_dir}"
+tar -xf "${build_dir}/binuntils-${binuntils_version}.tar.gz" -C "${build_dir}"
 
 gcc_src_path=$(realpath "${build_dir}/gcc-releases-gcc-${gcc_version}")
 binutils_src_path=$(realpath "${build_dir}/binutils-gdb-binutils-${binuntils_version//./_}")
@@ -236,11 +236,11 @@ done
 
 if [ "$build_cpp" = true ]; then
     for cmd in "${gpp_build_cmds[@]}"; do
-        echo -e "${MAGENTA}Building G++ with ${cmd}${NOCOLOR}"
+        echo -e "${MAGENTA}Building libstdc++ with ${cmd}${NOCOLOR}"
         if $cmd; then
             echo -e "${GREEN}${cmd} completed successfully.${NOCOLOR}"
         else
-            echo -e "${RED}Failed to build G++ (${cmd}). Aborting.${NOCOLOR}"
+            echo -e "${RED}Failed to build libstdc++ (${cmd}). Aborting.${NOCOLOR}"
             exit 1
         fi
     done
@@ -258,12 +258,25 @@ done
 
 if [ "$build_cpp" = true ]; then
     for cmd in "${gpp_install_cmds[@]}"; do
-        echo -e "${MAGENTA}Installing G++ with ${cmd}${NOCOLOR}"
+        echo -e "${MAGENTA}Installing libstdc++ with ${cmd}${NOCOLOR}"
         if $cmd; then
             echo -e "${GREEN}${cmd} completed successfully.${NOCOLOR}"
         else
-            echo -e "${RED}Failed to install G++ (${cmd}). Aborting.${NOCOLOR}"
+            echo -e "${RED}Failed to install libstdc++ (${cmd}). Aborting.${NOCOLOR}"
             exit 1
         fi
     done
 fi
+
+
+# Update .bashrc
+
+if [ "$compiler_saveto_bashrc" = true ]; then
+    if ! grep -q "export PATH=\"${compiler_location}/bin:\$PATH\"" "$HOME/.bashrc"; then
+        echo "export PATH=\"${compiler_location}/bin:\$PATH\"" >> "$HOME/.bashrc"
+        echo -e "${GREEN}Added compiler location to .bashrc.${NOCOLOR}"
+    else
+        echo -e "${YELLOW}Compiler location already present in .bashrc.${NOCOLOR}"
+    fi
+fi
+
